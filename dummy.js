@@ -123,29 +123,26 @@ function renderEmployeeList(container, employees, title, emptyMessage) {
 // ===== VIEW ALL EMPLOYEES =====
 /////////////////////////////////////////////////////////
 
-const viewAllBtn = document.getElementById("viewAllBtn");
+viewAllBtn.addEventListener("click", async () => {
+  const container = document.getElementById("employeeDetails");
 
-if (viewAllBtn) {
-  viewAllBtn.addEventListener("click", async () => {
-    const container = document.getElementById("employeeDetails");
+  showLoader();
+  try {
+    const response = await fetch(`${API_BASE}/viewAllEmployees`);
+    const employees = await response.json();
 
-    try {
-      const response = await fetch(`${API_BASE}/viewAllEmployees`);
-
-      const employees = await response.json();
-
-      renderEmployeeList(
-        container,
-        employees,
-        "All Employees",
-        "No employees found",
-      );
-    } catch (err) {
-      container.innerHTML = `<p style="color:red">${err.message}</p>`;
-    }
-  });
-}
-
+    renderEmployeeList(
+      container,
+      employees,
+      "All Employees",
+      "No employees found",
+    );
+  } catch (err) {
+    container.innerHTML = `<p style="color:red">${err.message}</p>`;
+  } finally {
+    hideLoader();
+  }
+});
 /////////////////////////////////////////////////////////
 // ===== SEARCH EMPLOYEE =====
 /////////////////////////////////////////////////////////
@@ -284,4 +281,12 @@ if (logoutBtn) {
   logoutBtn.addEventListener("click", () => {
     window.location.href = "index.html";
   });
+}
+////////////////page Loading indicator ///////////
+function showLoader() {
+  document.getElementById("loader").style.display = "block";
+}
+
+function hideLoader() {
+  document.getElementById("loader").style.display = "none";
 }
