@@ -403,3 +403,13 @@ function enableLoginForm() {
     .querySelectorAll("#loginForm input, #loginForm button")
     .forEach((el) => (el.disabled = false));
 }
+///logic to call backend every 10 minutes then only it will work efficiently in render free tier
+
+setInterval(
+  () => {
+    fetch("https://your-app.onrender.com")
+      .then((res) => console.log("Pinged self:", res.status))
+      .catch((err) => console.error("Ping failed", err));
+  },
+  10 * 60 * 1000,
+);
