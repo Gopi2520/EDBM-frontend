@@ -40,7 +40,14 @@ if (loginForm) {
         body: JSON.stringify({ username, password }),
       });
 
+      console.log("Status:", response.status);
+
+      if (!response.ok) {
+        throw new Error("Server error");
+      }
+
       const data = await response.json();
+      console.log("Response:", data);
 
       if (data.success) {
         window.location.href = data.redirect;
@@ -49,12 +56,12 @@ if (loginForm) {
         hideLoginLoader();
       }
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
+      alert("Server not reachable");
       hideLoginLoader();
     }
   });
 }
-
 /////////////////////////////////////////////////////////
 // ===== RENDER EMPLOYEE TABLE =====
 /////////////////////////////////////////////////////////
@@ -369,13 +376,30 @@ function stopLoginMessages() {
 }
 
 function showLoginLoader() {
-  document.getElementById("loginLoader").style.display = "flex";
+  const loader = document.getElementById("loginLoader");
+  if (!loader) return;
+
+  loader.style.display = "flex";
   disableLoginForm();
   startLoginMessages();
 }
 
 function hideLoginLoader() {
-  document.getElementById("loginLoader").style.display = "none";
+  const loader = document.getElementById("loginLoader");
+  if (!loader) return;
+
+  loader.style.display = "none";
   enableLoginForm();
   stopLoginMessages();
+}
+function disableLoginForm() {
+  document
+    .querySelectorAll("#loginForm input, #loginForm button")
+    .forEach((el) => (el.disabled = true));
+}
+
+function enableLoginForm() {
+  document
+    .querySelectorAll("#loginForm input, #loginForm button")
+    .forEach((el) => (el.disabled = false));
 }
