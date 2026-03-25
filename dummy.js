@@ -31,6 +31,8 @@ if (loginForm) {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
+    showLoginLoader();
+
     try {
       const response = await fetch(`${API_BASE}/login`, {
         method: "POST",
@@ -44,9 +46,11 @@ if (loginForm) {
         window.location.href = data.redirect;
       } else {
         alert("Invalid credentials");
+        hideLoginLoader();
       }
     } catch (err) {
       console.error(err);
+      hideLoginLoader();
     }
   });
 }
@@ -122,63 +126,68 @@ function renderEmployeeList(container, employees, title, emptyMessage) {
 /////////////////////////////////////////////////////////
 // ===== VIEW ALL EMPLOYEES =====
 /////////////////////////////////////////////////////////
+const viewAllBtn = document.getElementById("viewAllBtn");
 
-viewAllBtn.addEventListener("click", async () => {
-  const container = document.getElementById("employeeDetails");
+if (viewAllBtn) {
+  viewAllBtn.addEventListener("click", async () => {
+    const container = document.getElementById("employeeDetails");
 
-  showLoader();
-  try {
-    const response = await fetch(`${API_BASE}/viewAllEmployees`);
-    const employees = await response.json();
+    showLoader();
 
-    renderEmployeeList(
-      container,
-      employees,
-      "All Employees",
-      "No employees found",
-    );
-  } catch (err) {
-    container.innerHTML = `<p style="color:red">${err.message}</p>`;
-  } finally {
-    hideLoader();
-  }
-});
+    try {
+      const response = await fetch(`${API_BASE}/viewAllEmployees`);
+      const employees = await response.json();
+
+      renderEmployeeList(
+        container,
+        employees,
+        "All Employees",
+        "No employees found",
+      );
+    } catch (err) {
+      container.innerHTML = `<p style="color:red">${err.message}</p>`;
+    } finally {
+      hideLoader();
+    }
+  });
+}
 /////////////////////////////////////////////////////////
 // ===== SEARCH EMPLOYEE =====
 /////////////////////////////////////////////////////////
 
 const viewBtn = document.getElementById("viewBtn");
+if (viewBtn) {
+  viewBtn.addEventListener("click", async () => {
+    const name = document.getElementById("empname").value.trim();
+    const container = document.getElementById("employeeDetails");
 
-viewBtn.addEventListener("click", async () => {
-  const name = document.getElementById("empname").value.trim();
-  const container = document.getElementById("employeeDetails");
+    if (!name) {
+      container.innerHTML = `<p style="color:red">Enter name</p>`;
+      return;
+    }
 
-  if (!name) {
-    container.innerHTML = `<p style="color:red">Enter name</p>`;
-    return;
-  }
+    showLoader();
 
-  showLoader();
+    try {
+      const response = await fetch(
+        `${API_BASE}/viewEmployeesByName?empname=${name}`,
+      );
 
-  try {
-    const response = await fetch(
-      `${API_BASE}/viewEmployeesByName?empname=${name}`,
-    );
+      const employees = await response.json();
 
-    const employees = await response.json();
-
-    renderEmployeeList(
-      container,
-      employees,
-      "Matching Employees",
-      "No employee found",
-    );
-  } catch (err) {
-    container.innerHTML = `<p style="color:red">${err.message}</p>`;
-  } finally {
-    hideLoader();
-  }
-});
+      renderEmployeeList(
+        container,
+        employees,
+        "Matching Employees",
+        "No employee found",
+      );
+    } catch (err) {
+      container.innerHTML = `<p style="color:red">${err.message}</p>`;
+    } finally {
+      hideLoader();
+    }
+  });
+}
 /////////////////////////////////////////////////////////
 // ===== LOAD EMPLOYEE FOR UPDATE =====
 /////////////////////////////////////////////////////////
@@ -332,4 +341,41 @@ function enableButtons() {
   document.querySelectorAll("button").forEach((btn) => {
     btn.disabled = false;
   });
+}
+////for login page loading indicators
+let loginInterval;
+
+const loginMessages = [
+  "Logging in...",
+  "Verifying credentials...",
+  "Connecting to server...",
+  "Almost there...",
+];
+
+function startLoginMessages() {
+  let index = 0;
+
+  document.getElementById("loginLoadingText").innerText = loginMessages[index];
+
+  loginInterval = setInterval(() => {
+    index = (index + 1) % loginMessages.length;
+    document.getElementById("loginLoadingText").innerText =
+      loginMessages[index];
+  }, 2000);
+}
+
+function stopLoginMessages() {
+  clearInterval(loginInterval);
+}
+
+function showLoginLoader() {
+  document.getElementById("loginLoader").style.display = "flex";
+  disableLoginForm();
+  startLoginMessages();
+}
+
+function hideLoginLoader() {
+  document.getElementById("loginLoader").style.display = "none";
+  enableLoginForm();
+  stopLoginMessages();
 }
