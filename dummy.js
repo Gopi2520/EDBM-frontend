@@ -149,35 +149,36 @@ viewAllBtn.addEventListener("click", async () => {
 
 const viewBtn = document.getElementById("viewBtn");
 
-if (viewBtn) {
-  viewBtn.addEventListener("click", async () => {
-    const name = document.getElementById("empname").value.trim();
-    const container = document.getElementById("employeeDetails");
+viewBtn.addEventListener("click", async () => {
+  const name = document.getElementById("empname").value.trim();
+  const container = document.getElementById("employeeDetails");
 
-    if (!name) {
-      container.innerHTML = `<p style="color:red">Enter name</p>`;
-      return;
-    }
+  if (!name) {
+    container.innerHTML = `<p style="color:red">Enter name</p>`;
+    return;
+  }
 
-    try {
-      const response = await fetch(
-        `${API_BASE}/viewEmployeesByName?empname=${name}`,
-      );
+  showLoader();
 
-      const employees = await response.json();
+  try {
+    const response = await fetch(
+      `${API_BASE}/viewEmployeesByName?empname=${name}`,
+    );
 
-      renderEmployeeList(
-        container,
-        employees,
-        "Matching Employees",
-        "No employee found",
-      );
-    } catch (err) {
-      container.innerHTML = `<p style="color:red">${err.message}</p>`;
-    }
-  });
-}
+    const employees = await response.json();
 
+    renderEmployeeList(
+      container,
+      employees,
+      "Matching Employees",
+      "No employee found",
+    );
+  } catch (err) {
+    container.innerHTML = `<p style="color:red">${err.message}</p>`;
+  } finally {
+    hideLoader();
+  }
+});
 /////////////////////////////////////////////////////////
 // ===== LOAD EMPLOYEE FOR UPDATE =====
 /////////////////////////////////////////////////////////
@@ -285,8 +286,50 @@ if (logoutBtn) {
 ////////////////page Loading indicator ///////////
 function showLoader() {
   document.getElementById("loader").style.display = "block";
+  disableButtons();
+  startLoadingMessages();
 }
 
 function hideLoader() {
   document.getElementById("loader").style.display = "none";
+  enableButtons();
+  stopLoadingMessages();
+}
+///updated loading page
+
+let loadingInterval;
+
+const messages = [
+  "Loading data...",
+  "Fetching employees...",
+  "Downloading images may take some time...",
+  "Almost there...",
+  "Preparing your data...",
+];
+
+function startLoadingMessages() {
+  let index = 0;
+
+  document.getElementById("loadingText").innerText = messages[index];
+
+  loadingInterval = setInterval(() => {
+    index = (index + 1) % messages.length;
+    document.getElementById("loadingText").innerText = messages[index];
+  }, 4000);
+}
+
+function stopLoadingMessages() {
+  clearInterval(loadingInterval);
+}
+///anabling and disabling buttons while the page is loading
+function disableButtons() {
+  document.querySelectorAll("button").forEach((btn) => {
+    btn.disabled = true;
+  });
+}
+
+function enableButtons() {
+  document.querySelectorAll("button").forEach((btn) => {
+    btn.disabled = false;
+  });
 }
